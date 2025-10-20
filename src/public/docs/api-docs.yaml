@@ -1,0 +1,525 @@
+openapi: 3.0.0
+info:
+  title: API de Muebles
+  version: 1.0.0
+  description: |
+    API REST para la gestión de muebles, categorías, etiquetas y stock.
+    Esta documentación sigue las recomendaciones de OWASP para el manejo de autenticación, validación y exposición de datos.
+    ---
+    **Autor:** Rodrigo Pinto  
+    **Framework:** Laravel 11  
+    **Seguridad:** JWT (Bearer Token)
+
+servers:
+  - url: http://localhost:8080
+    description: Servidor local de desarrollo
+  - url: https://api.muebles.com
+    description: Servidor de producción
+
+tags:
+  - name: Autenticación
+    description: Endpoints para login y registro de usuarios
+  - name: Categorías
+    description: Endpoints para la gestión de categorías de productos
+  - name: Muebles
+    description: Endpoints para la gestión de muebles
+  - name: Etiquetas
+    description: Endpoints para la gestión de etiquetas asociadas a los muebles
+
+paths:
+  /api/login:
+    post:
+      tags:
+        - Autenticación
+      summary: Iniciar sesión
+      description: Autentica al usuario y devuelve un token JWT.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  example: user@example.com
+                password:
+                  type: string
+                  example: secret123
+      responses:
+        "200":
+          description: Autenticación exitosa
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+
+  /api/furniture:
+    get:
+      tags:
+        - Muebles
+      summary: Listar todos los muebles
+      description: Devuelve un listado de todos los muebles con sus categorías y etiquetas asociadas.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Listado de muebles obtenido correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Furniture"
+
+    post:
+      tags:
+        - Muebles
+      summary: Crear un nuevo mueble
+      description: Crea un nuevo mueble y permite asociarlo a categorías y etiquetas.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FurnitureInput"
+      responses:
+        "201":
+          description: Mueble creado exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Furniture"
+
+  /api/furniture/{id}:
+    get:
+      tags:
+        - Muebles
+      summary: Obtener un mueble por ID
+      description: Devuelve la información de un mueble específico, incluyendo su categoría y etiquetas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 5
+      responses:
+        "200":
+          description: Mueble encontrado
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Furniture"
+        "404":
+          description: Mueble no encontrado
+
+    put:
+      tags:
+        - Muebles
+      summary: Actualizar un mueble existente
+      description: Actualiza los datos de un mueble, incluyendo su nombre, descripción, precio, categorías o etiquetas.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 5
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/FurnitureInput"
+      responses:
+        "200":
+          description: Mueble actualizado correctamente
+        "404":
+          description: Mueble no encontrado
+
+    delete:
+      tags:
+        - Muebles
+      summary: Eliminar un mueble
+      description: Elimina un mueble existente del sistema.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 3
+      responses:
+        "200":
+          description: Mueble eliminado correctamente
+        "404":
+          description: Mueble no encontrado
+
+  /api/tags:
+    get:
+      tags:
+        - Etiquetas
+      summary: Listar todas las etiquetas
+      description: Devuelve todas las etiquetas disponibles junto con los muebles asociados.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Listado de etiquetas obtenido correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Tag"
+
+    post:
+      tags:
+        - Etiquetas
+      summary: Crear una nueva etiqueta
+      description: Crea una nueva etiqueta para clasificar los muebles.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TagInput"
+      responses:
+        "201":
+          description: Etiqueta creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+
+  /api/tags/{id}:
+    get:
+      tags:
+        - Etiquetas
+      summary: Obtener una etiqueta por ID
+      description: Devuelve la información de una etiqueta específica.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 4
+      responses:
+        "200":
+          description: Etiqueta encontrada
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Tag"
+        "404":
+          description: Etiqueta no encontrada
+
+    put:
+      tags:
+        - Etiquetas
+      summary: Actualizar una etiqueta existente
+      description: Actualiza los datos de una etiqueta (nombre o descripción).
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 4
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TagInput"
+      responses:
+        "200":
+          description: Etiqueta actualizada correctamente
+        "404":
+          description: Etiqueta no encontrada
+
+    delete:
+      tags:
+        - Etiquetas
+      summary: Eliminar una etiqueta
+      description: Elimina una etiqueta existente del sistema.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 2
+      responses:
+        "200":
+          description: Etiqueta eliminada correctamente
+        "404":
+          description: Etiqueta no encontrada
+
+  /api/categories:
+    get:
+      tags:
+        - Categorías
+      summary: Listar todas las categorías
+      description: Devuelve un listado completo de las categorías disponibles.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Listado de categorías obtenido correctamente
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Category"
+
+    post:
+      tags:
+        - Categorías
+      summary: Crear una nueva categoría
+      description: Crea una nueva categoría para clasificar los muebles.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "201":
+          description: Categoría creada exitosamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+
+  /api/categories/{id}:
+    get:
+      tags:
+        - Categorías
+      summary: Obtener una categoría por ID
+      description: Devuelve los datos de una categoría específica.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 2
+      responses:
+        "200":
+          description: Categoría encontrada correctamente
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Category"
+        "404":
+          description: Categoría no encontrada
+
+    put:
+      tags:
+        - Categorías
+      summary: Actualizar una categoría existente
+      description: Permite modificar el nombre o descripción de una categoría.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 2
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+      responses:
+        "200":
+          description: Categoría actualizada correctamente
+        "404":
+          description: Categoría no encontrada
+
+    delete:
+      tags:
+        - Categorías
+      summary: Eliminar una categoría
+      description: Elimina una categoría del sistema.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+            example: 2
+      responses:
+        "200":
+          description: Categoría eliminada correctamente
+        "404":
+          description: Categoría no encontrada
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Furniture:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 12
+        name:
+          type: string
+          example: Silla ergonómica
+        description:
+          type: string
+          example: Silla acolchada con respaldo ajustable
+        price:
+          type: number
+          format: float
+          example: 250.00
+        categories:
+          type: array
+          description: Categorías asociadas al mueble
+          items:
+            $ref: "#/components/schemas/Category"
+        tags:
+          type: array
+          description: Etiquetas asociadas al mueble
+          items:
+            $ref: "#/components/schemas/Tag"
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-10-20T12:34:56Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-10-20T12:34:56Z"
+
+    FurnitureInput:
+      type: object
+      required:
+        - name
+        - price
+      properties:
+        name:
+          type: string
+          example: Mesa de comedor
+        description:
+          type: string
+          example: Mesa extensible de madera maciza
+        price:
+          type: number
+          example: 199.99
+        categories:
+          type: array
+          items:
+            type: integer
+            example: 2
+        tags:
+          type: array
+          items:
+            type: integer
+            example: 1
+
+    Tag:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 3
+        name:
+          type: string
+          example: Moderno
+        description:
+          type: string
+          example: Estilo moderno y minimalista
+        created_at:
+          type: string
+          format: date-time
+          example: "2025-10-20T12:34:56Z"
+        updated_at:
+          type: string
+          format: date-time
+          example: "2025-10-20T12:34:56Z"
+
+    TagInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Clásico
+        description:
+          type: string
+          example: Muebles de estilo clásico y elegante
+
+    Category:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Sillas
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+
+    CategoryInput:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          example: Sillas
+        description:
+          type: string
+          example: Categoría para todos los tipos de sillas
+
+security:
+  - bearerAuth: []

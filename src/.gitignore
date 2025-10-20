@@ -1,0 +1,48 @@
+# Laravel & general PHP
+/vendor
+/node_modules
+/public/build
+/public/hot
+/public/storage
+/storage/*.key
+/storage/pail
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/views/*
+/storage/logs/*.log
+!/storage/.gitignore
+/bootstrap/cache/*
+!/bootstrap/cache/.gitignore
+.documentation.MD
+
+# Environment files
+.env
+.env.backup
+.env.production
+/auth.json
+
+# IDE / Editor
+/.idea
+/.vscode
+/.phpactor.json
+/.phpunit.cache
+/.fleet
+/.zed
+Homestead.json
+Homestead.yaml
+Thumbs.db
+.DS_Store
+
+# Docker
+docker-compose.override.yml
+docker/data
+docker/tmp
+
+# Swagger / L5-Swagger generated docs
+/storage/api-docs
+
+# PHPUnit results
+.phpunit.result.cache
+
+# Misc
+/public/hot
